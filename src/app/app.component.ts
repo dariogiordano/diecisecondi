@@ -62,6 +62,8 @@ export class AppComponent implements AfterViewInit {
       else
       {
         let event:TouchEvent=e as TouchEvent;
+        event.stopPropagation();
+        event.preventDefault();
         if(event.type==="touchend") return this.pressed=false;
         canChangeStatus=this.pressed===false;
         if(this.pressed===false)
