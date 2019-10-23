@@ -1,5 +1,6 @@
 import { Component,AfterViewInit } from '@angular/core';
 import {fromEvent, Observable} from 'rxjs';
+import {filter,merge, map} from 'rxjs/operators'
 import { DeviceDetectorService } from 'ngx-device-detector';
 @Component({
   selector: 'app-root',
@@ -13,7 +14,6 @@ export class AppComponent implements AfterViewInit {
   public getIsMobile() {
     return this.deviceService.isMobile();
   }
-  isMobile : boolean=false;
   title : string = 'dieci secondi'
   status : string = "off"
   pressed : boolean = false
@@ -27,26 +27,29 @@ export class AppComponent implements AfterViewInit {
   }
   ngAfterViewInit(){
     let fullscreen$:Observable<Event>;
-    let count$:Observable<Event>;
+    let down$:Observable<Event>;
     let up$:Observable<Event>;
     if(this.getIsMobile()===false)
     {
-     
       fullscreen$=fromEvent(document,"fullscreenchange");
-      count$=fromEvent(document.body, 'keypress');
       up$=fromEvent(document.body, 'keyup');
-      up$.subscribe(()=>{ this.pressed=false})
+      down$=fromEvent(document.body, 'keypress').pipe(merge(up$),filter((event:KeyboardEvent)=> event.type==="keyup" || event.which === 102 || event.which === 32));
       fullscreen$.subscribe((e)=>{ this.isFullScreen=document.fullscreen})
     }
     else
     { this.isFullScreen=true;
-      count$=fromEvent(document.body, 'mouseclick');
+      up$=fromEvent(document.body, 'touchend');
+      down$=fromEvent(document.body, 'touchstart').pipe(merge(up$),map(e=>{
+        return e
+      }));
     }
     
-    count$.subscribe((e:Event) => {
+    down$.subscribe((e:Event) => {
+    
       let canChangeStatus=false;
       if(!this.getIsMobile())
-      {
+      { 
+        if(e.type==="keyup") return this.pressed=false;
         let event:KeyboardEvent=e as KeyboardEvent;
         if( event.which === 102){
           this.status='off'
@@ -58,9 +61,13 @@ export class AppComponent implements AfterViewInit {
       }
       else
       {
-        canChangeStatus=true;
+        let event:TouchEvent=e as TouchEvent;
+        if(event.type==="touchend") return this.pressed=false;
+        canChangeStatus=this.pressed===false;
+        if(this.pressed===false)
+        this.pressed=true
       }
-      if(canChangeStatus ){
+      if(canChangeStatus ){ 
         switch (this.status){
           case 'off':
             this.status='on';
