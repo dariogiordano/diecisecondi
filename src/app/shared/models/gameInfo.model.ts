@@ -1,0 +1,1 @@
+export interface GameInfo {username:string;score:number;}

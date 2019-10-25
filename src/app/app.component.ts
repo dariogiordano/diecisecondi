@@ -1,7 +1,8 @@
-import { Component,AfterViewInit } from '@angular/core';
+import { Component,AfterViewInit ,ViewChild,ElementRef} from '@angular/core';
 import {fromEvent, Observable} from 'rxjs';
 import {filter,merge, map} from 'rxjs/operators'
 import { DeviceDetectorService } from 'ngx-device-detector';
+import {GameInfo} from './shared/models/gameInfo.model'
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -14,18 +15,39 @@ export class AppComponent implements AfterViewInit {
   public getIsMobile() {
     return this.deviceService.isMobile();
   }
+ 
+  @ViewChild('usernameField', {static: true}) usernameField: ElementRef;
   title : string = 'dieci secondi'
   status : string = "off"
   pressed : boolean = false
   dateStart : Date = new Date()
   isFullScreen : boolean = document.fullscreen
   diffInMs : number = 0
+  scores:Array<Object>=[]
+  isLower=false
+  gameInfo:GameInfo={username:null,score:null}
+  error:boolean=false
+  reset(){
+    this.gameInfo.username=null;
+    this.error=false;
+    setTimeout(() => {
+      this.usernameField.nativeElement.focus();
+    },100)
+  }
   fullScreen() {
     let elem = document.documentElement;
     let methodToBeInvoked = elem.requestFullscreen 
-    if (methodToBeInvoked) methodToBeInvoked.call(elem);
+    if (methodToBeInvoked)
+    {
+      methodToBeInvoked.call(elem);
+      this.reset();
+    }
   }
   ngAfterViewInit(){
+    
+    if(localStorage.getItem("scores")!=undefined){
+      this.scores=JSON.parse(localStorage.getItem("scores"));
+    }
     let fullscreen$:Observable<Event>;
     let down$:Observable<Event>;
     let up$:Observable<Event>;
@@ -33,7 +55,7 @@ export class AppComponent implements AfterViewInit {
     {
       fullscreen$=fromEvent(document,"fullscreenchange");
       up$=fromEvent(document.body, 'keyup');
-      down$=fromEvent(document.body, 'keypress').pipe(merge(up$),filter((event:KeyboardEvent)=> event.type==="keyup" || event.which === 102 || event.which === 32));
+      down$=fromEvent(document.body, 'keypress').pipe(merge(up$),filter((event:KeyboardEvent)=> event.type==="keyup" || event.which === 102 || event.which === 13));
       fullscreen$.subscribe((e)=>{ this.isFullScreen=document.fullscreen})
     }
     else
@@ -51,11 +73,13 @@ export class AppComponent implements AfterViewInit {
       { 
         if(e.type==="keyup") return this.pressed=false;
         let event:KeyboardEvent=e as KeyboardEvent;
-        if( event.which === 102){
+        event.stopPropagation();
+        event.preventDefault();
+        if( event.which === 102 && this.isFullScreen===false){
           this.status='off'
           this.fullScreen()
         }
-        canChangeStatus=event.which === 32 && this.pressed===false
+        canChangeStatus=event.which === 13 && this.pressed===false
         if(this.pressed===false)
           this.pressed=true
       }
@@ -72,15 +96,26 @@ export class AppComponent implements AfterViewInit {
       if(canChangeStatus ){ 
         switch (this.status){
           case 'off':
-            this.status='on';
-            this.dateStart=new Date();
+           
+            if(this.gameInfo.username===null || this.gameInfo.username==="" ){
+              this.error=true;
+            }else{
+              this.error=false;
+              this.status='on';
+              this.dateStart=new Date();
+            }
             break;
           case 'on':
+            let newDate= new Date();
             this.status='completed';
-            this.diffInMs =  new Date().getTime() - this.dateStart.getTime();
+            this.isLower=newDate.getTime() - this.dateStart.getTime()<15000
+            console.log(this.isLower)
+            this.diffInMs =this.isLower?15000-(newDate.getTime() - this.dateStart.getTime()): (newDate.getTime() - this.dateStart.getTime())-15000;
             break;
           case 'completed':
             this.status='off'
+           this.reset()
+           
             break;
         }
       }

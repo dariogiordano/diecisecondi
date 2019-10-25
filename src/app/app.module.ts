@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
+import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import {DeviceDetectorModule} from 'ngx-device-detector';
 
@@ -10,6 +10,7 @@ import {DeviceDetectorModule} from 'ngx-device-detector';
   ],
   imports: [
     BrowserModule,
+    FormsModule,
     DeviceDetectorModule.forRoot()
   ],
   providers: [],
