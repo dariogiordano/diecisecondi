@@ -1,10 +1,18 @@
 <div [hidden]="!isFullScreen">
 <div [hidden]="status!=='off'">
-    <input #usernameField type="text" [(ngModel)]="gameInfo.username" placeholder="your name here"/>
+    <input #usernameField type="text" [(ngModel)]="currentUser.username" placeholder="Qual è il tuo nome?"/>
   <div *ngIf="error">please insert your name</div>
 </div>
 <div [hidden]="status!=='completed'">
- hi {{gameInfo.username | titlecase}}! you counted {{isLower?'too fast by ':'too slow by '}}{{diffInMs | date:'ss:SSS'}}
+ <p>Ciao {{currentUser.username | titlecase}}!<br />
+  Sei stato un po' troppo  {{currentUser.isLower?'veloce ':'lento '}}<br />
+  Hai contato fino a 10 in {{this.currentUser.time | date:'ss:SSS'}} secondi<br />
+  ecco la tua posizione in classifica
+</p>
+<app-ranking [scores]="scores$ | async" [showHl]="true"></app-ranking>
+</div>
+<div [hidden]="status!=='preon'">
+  READY?!
 </div>
 <div [hidden]="status!=='on'">
   counting
@@ -13,4 +21,5 @@
 </div>
 <div  [hidden]="isFullScreen">
 press "f" for fullscreen
+<app-ranking [scores]="scores$ | async" [canDelete]=true></app-ranking>
   </div>
