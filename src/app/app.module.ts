@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import {DeviceDetectorModule} from 'ngx-device-detector';
 import { RankingComponent } from './ranking/ranking.component';
+import { SolarComponent } from './solar/solar.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    RankingComponent
+    RankingComponent,
+    SolarComponent
   ],
   imports: [
     BrowserModule,
