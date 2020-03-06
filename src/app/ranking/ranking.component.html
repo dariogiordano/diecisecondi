@@ -1,5 +1,5 @@
 <ol>
     <li *ngFor="let user of scores">
-        <span [ngClass]="{'highlight' : user.hl && showHl}">{{user.username}} {{user.time | date:'ss:SSS'}} {{user.isLower?'-':'+'}}{{user.diffTime | date:'ss:SSS'}}</span> <span *ngIf="canDelete" (click)="Click($index)">X</span>
+        <span [ngClass]="{'highlight' : user.hl && showHl}">{{user.username}} {{user.time | date:'ss:SSS'}} {{user.isLower?'-':'+'}}{{user.diffTime | date:'ss:SSS'}}</span> 
     </li>
 </ol>
